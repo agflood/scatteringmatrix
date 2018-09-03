@@ -1,10 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='scatteringmatrix',
-      version='0.1.0.dev4',
+      version='0.1.0.dev5',
       description='Optical scattering matrix library',
       author='Andrew G. Flood',
-      author_email='andrew.gary.flood@gamil.com',
+      author_email='andrew.gary.flood@gmail.com',
+      url='https://github.com/agflood/scatteringmatrix',
       license='MIT',
       classifiers=[
               'Development Status :: 2 - Pre-Alpha',
@@ -19,7 +20,7 @@ setup(name='scatteringmatrix',
               'Programming Language :: Python :: 3.6',
               ],
       keywords='optics scattering matrix photonics',
-      packages=[],
+      packages=find_packages(exclude=('tests', 'docs', 'sphinx')),
       py_modules=["scatteringmatrix"],
       install_requires=['numpy','scipy'],
       python_requires='>=3',
