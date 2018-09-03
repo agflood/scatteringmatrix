@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(name='scatteringmatrix',
-      version='0.1.0.dev3',
+      version='0.1.0.dev4',
       description='Optical scattering matrix library',
       author='Andrew G. Flood',
-      author_email='andrew.flood@mail.utoronto.ca',
+      author_email='andrew.gary.flood@gamil.com',
       license='MIT',
       classifiers=[
               'Development Status :: 2 - Pre-Alpha',
