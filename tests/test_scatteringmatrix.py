@@ -15,80 +15,80 @@ import os
 class TestConvertUnits(unittest.TestCase):
     
     def test_convert_eV_wl_1eV_is_1dot24um(self):
-        wavelength_calc = sm.convert["eV"]["wl"](1.0)
-        wavelength_predict = 1.23984*sm.MICROMETERS
+        wavelength_calc = sm.convert_photon_unit("eV","wl",1.0)
+        wavelength_predict = 1.23984*sm.Units.um
         ratio = wavelength_calc/wavelength_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
         
     def test_convert_eV_wl_nparray(self):
-        wavelength_calc = sm.convert["eV"]["wl"](np.array([1.0,1.5]))
-        wavelength_predict = np.array([1.23984, 0.82656108])*sm.MICROMETERS
+        wavelength_calc = sm.convert_photon_unit("eV","wl",np.array([1.0,1.5]))
+        wavelength_predict = np.array([1.23984, 0.82656108])*sm.Units.um
         ratio = wavelength_calc/wavelength_predict
         npt.assert_array_almost_equal(ratio, np.array([1.0,1.0]),decimal=5)
     
     def test_convert_eV_wl_is_reversable(self):
         eV_start = 1.5
-        wavelength_first = sm.convert["eV"]["wl"](eV_start)
-        eV_next = sm.convert["wl"]["eV"](wavelength_first)
+        wavelength_first = sm.convert_photon_unit("eV","wl",eV_start)
+        eV_next = sm.convert_photon_unit("wl","eV",wavelength_first)
         ratio = eV_next/eV_start
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_convert_wl_freq_1um_is_300THz(self):
-        freq_calc = sm.convert["wl"]["freq"](1.0*sm.MICROMETERS)
-        freq_predict = 299.793*sm.TERAHERTZ
+        freq_calc = sm.convert_photon_unit("wl","freq",1.0*sm.Units.um)
+        freq_predict = 299.793*sm.Units.THz
         ratio = freq_calc/freq_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_convert_wl_freq_nparray(self):
-        freq_calc = sm.convert["wl"]["freq"](np.array([1.0,0.5])*sm.MICROMETERS)
-        freq_predict = np.array([299.793,599.586])*sm.TERAHERTZ
+        freq_calc = sm.convert_photon_unit("wl","freq",np.array([1.0,0.5])*sm.Units.um)
+        freq_predict = np.array([299.793,599.586])*sm.Units.THz
         ratio = freq_calc/freq_predict
         npt.assert_array_almost_equal(ratio, np.array([1.0,1.0]),decimal=5)
     
     def test_convert_wl_freq_is_reversable(self):
-        wavelength_start = 1.5*sm.MICROMETERS
-        freq_first = sm.convert["wl"]["freq"](wavelength_start)
-        wavelength_next = sm.convert["freq"]["wl"](freq_first)
+        wavelength_start = 1.5*sm.Units.um
+        freq_first = sm.convert_photon_unit("wl","freq",wavelength_start)
+        wavelength_next = sm.convert_photon_unit("freq","wl",freq_first)
         ratio = wavelength_next/wavelength_start
         self.assertAlmostEqual(ratio,1.0,places=5)
         
     def test_convert_freq_eV_100THz_is_0dot413(self):
-        eV_calc = sm.convert["freq"]["eV"](100.0*sm.TERAHERTZ)
+        eV_calc = sm.convert_photon_unit("freq","eV",100.0*sm.Units.THz)
         eV_predict = 0.4135659
         ratio = eV_calc/eV_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_convert_freq_eV_nparray(self):
-        eV_calc = sm.convert["freq"]["eV"](np.array([100.0,2000.0])*sm.TERAHERTZ)
+        eV_calc = sm.convert_photon_unit("freq","eV",np.array([100.0,2000.0])*sm.Units.THz)
         eV_predict = np.array([0.4135659,8.271318])
         ratio = eV_calc/eV_predict
         npt.assert_array_almost_equal(ratio, np.array([1.0,1.0]),decimal=5)
     
     def test_convert_freq_eV_is_reversable(self):
-        freq_start = 500.0*sm.TERAHERTZ
-        eV_first = sm.convert["freq"]["eV"](freq_start)
-        freq_next = sm.convert["eV"]["freq"](eV_first)
+        freq_start = 500.0*sm.Units.THz
+        eV_first = sm.convert_photon_unit("freq","eV",freq_start)
+        freq_next = sm.convert_photon_unit("eV","freq",eV_first)
         ratio = freq_next/freq_start
         self.assertAlmostEqual(ratio,1.0,places=5)
 
 class TestConvertNk(unittest.TestCase):
         
     def test_convert_nk_erei_1dot5_is_2dot25(self):
-        erei_calc = sm.convert_nk["nk"]["er_ei"](1.5+1.0j)
+        erei_calc = sm.convert_index_unit("nk","er_ei",1.5+1.0j)
         erei_predict = 1.25+3.0j
         ratio = erei_calc/erei_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_convert_nk_erei_is_reversable(self):
         nk_start = 1.5+1.0j
-        erei_first = sm.convert_nk["nk"]["er_ei"](nk_start)
-        nk_next = sm.convert_nk["er_ei"]["nk"](erei_first)
+        erei_first = sm.convert_index_unit("nk","er_ei",nk_start)
+        nk_next = sm.convert_index_unit("er_ei","nk",erei_first)
         ratio = nk_next/nk_start
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_convert_nk_nparray(self):
         nk_init = np.array([1.5+1.0j, 2.0])
-        erei_calc = sm.convert_nk["nk"]["er_ei"](nk_init)
+        erei_calc = sm.convert_index_unit("nk","er_ei",nk_init)
         erei_predict = np.array([1.25+3.0j, 4.0])
         ratio = erei_calc/erei_predict
         npt.assert_array_almost_equal(ratio, np.array([1.0,1.0]),decimal=5)
@@ -136,19 +136,19 @@ class TestTransmissionAngle(unittest.TestCase):
 class TestGetKz(unittest.TestCase):
     
     def test_get_kz_angle_0(self):
-        kz_calc = sm.get_kz(1.5,0.0,1.0*sm.MICROMETERS)
+        kz_calc = sm.get_kz(1.5,0.0,1.0*sm.Units.um)
         kz_predict = 9.42477796*10**6
         ratio = kz_calc/kz_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_get_kz_with_angle(self):
-        kz_calc = sm.get_kz(1.5,np.pi/3.0,1.0*sm.MICROMETERS)
+        kz_calc = sm.get_kz(1.5,np.pi/3.0,1.0*sm.Units.um)
         kz_predict = 4.712388898*10**6
         ratio = kz_calc/kz_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_get_kz_complex(self):
-        kz_calc = sm.get_kz(1.2+1.0j,0.5-0.1j,1.0*sm.MICROMETERS)
+        kz_calc = sm.get_kz(1.2+1.0j,0.5-0.1j,1.0*sm.Units.um)
         kz_predict = (6.34819404+5.903688016j)*10**6
         ratio = kz_calc/kz_predict
         self.assertAlmostEqual(ratio,1.0,places=5)
@@ -156,7 +156,7 @@ class TestGetKz(unittest.TestCase):
     def test_get_kz_nparray(self):
         index_init = np.array([1.5,1.0])
         angle_init = np.array([0.0,np.pi/4.0])
-        wavelengths = np.array([0.5,1.0])*sm.MICROMETERS
+        wavelengths = np.array([0.5,1.0])*sm.Units.um
         kz_calc = sm.get_kz(index_init,angle_init,wavelengths)
         kz_predict = np.array([18.849555,4.4428829])*10**6
         ratio = kz_calc/kz_predict
@@ -417,7 +417,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
                                                dependent_col=np.array([2,3]),
                                                independent_unit_str="um", 
                                                lines_to_skip = 1)
-        ratio = index_function(0.8*sm.MICROMETERS)/(2.0+0.2j)
+        ratio = index_function(0.8*sm.Units.um)/(2.0+0.2j)
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_expected_nk_interpolate(self):
@@ -427,7 +427,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
                                                dependent_col=np.array([2,3]),
                                                independent_unit_str="um", 
                                                lines_to_skip = 1)
-        ratio = index_function(0.95*sm.MICROMETERS)/(3.5+0.05j)
+        ratio = index_function(0.95*sm.Units.um)/(3.5+0.05j)
         self.assertAlmostEqual(ratio,1.0,places=5)
         
     def test_create_nk_from_csv_expected_nk_upperbound(self):
@@ -437,7 +437,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
                                                dependent_col=np.array([2,3]),
                                                independent_unit_str="um", 
                                                lines_to_skip = 1)
-        ratio = index_function(1.5*sm.MICROMETERS)/(2.0+0.4j)        
+        ratio = index_function(1.5*sm.Units.um)/(2.0+0.4j)        
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_expected_nk_lowerbound(self):
@@ -447,7 +447,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
                                                dependent_col=np.array([2,3]),
                                                independent_unit_str="um", 
                                                lines_to_skip = 1)
-        ratio = index_function(0.1*sm.MICROMETERS)/(2.0+0.0j)
+        ratio = index_function(0.1*sm.Units.um)/(2.0+0.0j)
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_expected_nk_nm_er_ei(self):
@@ -458,7 +458,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
                                                dependent_col=np.array([2,3]),
                                                dependent_unit_str="er_ei", 
                                                lines_to_skip = 2)
-        ratio = index_function(1.3*sm.MICROMETERS)/(1.010947736+0.1483756228j)
+        ratio = index_function(1.3*sm.Units.um)/(1.010947736+0.1483756228j)
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_expected_nk_eV(self):
@@ -467,7 +467,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
         index_function = sm.create_nk_from_csv(filename_full,
                                                independent_unit_str="eV", 
                                                lines_to_skip = 1)
-        ratio = index_function(1.23984*sm.MICROMETERS)/(2.0+0.4j)
+        ratio = index_function(1.23984*sm.Units.um)/(2.0+0.4j)
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_expected_nk_eV_lowerbound(self):
@@ -476,7 +476,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
         index_function = sm.create_nk_from_csv(filename_full,
                                                independent_unit_str="eV", 
                                                lines_to_skip = 1)
-        ratio =index_function(sm.convert["eV"]["wl"](0.05))/(2.0+0.2j)
+        ratio =index_function(sm.convert_photon_unit("eV","wl",0.05))/(2.0+0.2j)
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_expected_nk_eV_upperbound(self):
@@ -485,7 +485,7 @@ class TestCreateNKFromCSV(unittest.TestCase):
         index_function = sm.create_nk_from_csv(filename_full,
                                                independent_unit_str="eV", 
                                                lines_to_skip = 1)
-        ratio =index_function(sm.convert["eV"]["wl"](6.0))/(2.0+0.0j)
+        ratio =index_function(sm.convert_photon_unit("eV","wl",6.0))/(2.0+0.0j)
         self.assertAlmostEqual(ratio,1.0,places=5)
     
     def test_create_nk_from_csv_indep_unit_except(self):
@@ -512,9 +512,9 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         index_air = sm.single_index_function(1.0)
         index_glass = sm.single_index_function(1.5)
         structure = sm.LayerList()
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_glass, 1.0*sm.MICROMETERS))
-        calculate_powers = sm.scattering_matrix_calculation(structure, 1.0*sm.MICROMETERS)
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_glass, 1.0*sm.Units.um))
+        calculate_powers = sm.scattering_matrix_calculation(structure, 1.0*sm.Units.um)
         calc_transmission = calculate_powers[0]
         calc_reflection = calculate_powers[1]
         calc_absorption = calculate_powers[2]
@@ -530,9 +530,9 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         index_air = sm.single_index_function(1.0)
         index_complex = sm.single_index_function(1.5-2.0j)
         structure = sm.LayerList()
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_complex, 0.0*sm.MICROMETERS))
-        calculate_powers = sm.scattering_matrix_calculation(structure, 1.0*sm.MICROMETERS)
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 0.0*sm.Units.um))
+        calculate_powers = sm.scattering_matrix_calculation(structure, 1.0*sm.Units.um)
         calc_transmission = calculate_powers[0]
         calc_reflection = calculate_powers[1]
         calc_absorption = calculate_powers[2]
@@ -548,9 +548,9 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         index_air = sm.single_index_function(1.0)
         index_complex = sm.single_index_function(1.5-2.0j)
         structure = sm.LayerList()
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_complex, 1.0*sm.MICROMETERS))
-        calculate_powers = sm.scattering_matrix_calculation(structure, 1.0*sm.MICROMETERS)
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 1.0*sm.Units.um))
+        calculate_powers = sm.scattering_matrix_calculation(structure, 1.0*sm.Units.um)
         calc_transmission = calculate_powers[0]
         calc_reflection = calculate_powers[1]
         expected_transmission = (sm.transmitted_power_TE(1.0, 1.5-2.0j, 0.0)
@@ -572,19 +572,19 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         index_air = sm.single_index_function(i1)
         index_complex = sm.single_index_function(i2)
         structure = sm.LayerList()
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_complex, 1.0*sm.MICROMETERS))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 1.0*sm.Units.um))
         calculate_powers = sm.scattering_matrix_calculation(structure, 
-                                                            1.0*sm.MICROMETERS,
+                                                            1.0*sm.Units.um,
                                                             incident_angle=angle)
         calc_transmission = calculate_powers[0]
         calc_reflection = calculate_powers[1]
         
         #Expected
         t_angle = sm.transmission_angle(i1, i2, angle)
-        kz = sm.get_kz(i2, t_angle, 1.0*sm.MICROMETERS)
+        kz = sm.get_kz(i2, t_angle, 1.0*sm.Units.um)
         expected_transmission = (sm.transmitted_power_TE(1.0, 1.5-2.0j, angle)
-                                 *np.exp((-2.0j*kz*1.0*sm.MICROMETERS).real))
+                                 *np.exp((-2.0j*kz*1.0*sm.Units.um).real))
         expected_reflection = sm.reflected_power_TE(1.0, 1.5-2.0j, angle)
         
         
@@ -605,10 +605,10 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         index_air = sm.single_index_function(i1)
         index_complex = sm.single_index_function(i2)
         structure = sm.LayerList()
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_complex, 1.0*sm.MICROMETERS))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 1.0*sm.Units.um))
         calculate_powers = sm.scattering_matrix_calculation(structure, 
-                                                            1.0*sm.MICROMETERS,
+                                                            1.0*sm.Units.um,
                                                             incident_angle=angle,
                                                             mode="TM")
         calc_transmission = calculate_powers[0]
@@ -616,9 +616,9 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         
         #Expected
         t_angle = sm.transmission_angle(i1, i2, angle)
-        kz = sm.get_kz(i2, t_angle, 1.0*sm.MICROMETERS)
+        kz = sm.get_kz(i2, t_angle, 1.0*sm.Units.um)
         expected_transmission = (sm.transmitted_power_TM(1.0, 1.5-2.0j, angle)
-                                 *np.exp((-2.0j*kz*1.0*sm.MICROMETERS).real))
+                                 *np.exp((-2.0j*kz*1.0*sm.Units.um).real))
         expected_reflection = sm.reflected_power_TM(1.0, 1.5-2.0j, angle)
         
         
@@ -633,12 +633,12 @@ class TestScatteringMatrixCalc(unittest.TestCase):
     def test_scattering_matrix_calculation_fabryperot(self):
         index_air = sm.single_index_function(1.0)
         index_glass = sm.single_index_function(1.5)
-        wavelengths = np.array([1.5*sm.MICROMETERS,0.75*sm.MICROMETERS, 
-                                6.0/5.0*sm.MICROMETERS])
+        wavelengths = np.array([1.5*sm.Units.um,0.75*sm.Units.um, 
+                                6.0/5.0*sm.Units.um])
         structure = sm.LayerList()
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_glass, 1.0*sm.MICROMETERS))
-        structure.append(sm.SingleLayer(index_air, 1.0*sm.MICROMETERS))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_glass, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
         calculate_powers = sm.scattering_matrix_calculation(structure, wavelengths)
         calc_transmission = calculate_powers[0]
         calc_reflection = calculate_powers[1]

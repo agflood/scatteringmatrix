@@ -63,62 +63,16 @@ Functions:
                                     absorption for a given layer list   
     
 """
+
 import math
 import csv
 import numpy as np
 import scipy as sp
 from scipy import constants
 from scipy import interpolate
-
-"""
-------------
-DEFINE UNITS
-------------
-"""
-
-"""Constants and units useful for optical calculations"""
-#Distance Units
-KILOMETERS = 10.0**3
-METERS = 1.0
-CENTIMETERS = 10.0**-2
-MILLIMETERS = 10.0**-3
-MICROMETERS = 10.0**-6
-NANOMETERS = 10.0**-9
-PICOMETERS = 10.0**-12
-FEMTOMETERS = 10.0**-15
-
-#Frequency Units
-HERTZ = 1.0
-KILOHERTZ = 10.0**3
-MEGAHERTZ = 10.0**6
-GIGAHERTZ = 10.0**9
-TERAHERTZ = 10.0**12
-PETAHERTZ = 10.0**15
-
-#Time Units
-SECONDS = 1.0
-MILLISECONDS = 10.0**-3
-MICROSECONDS = 10.0**-6
-NANOSECONDS = 10.0**-9
-PICOSECONDS = 10.0**-12
-FEMTOSECONDS = 10.0**-15
-
-WATTS = 1.0
-    
-"""convert[from][to](value)"""
-convert = {}
-convert["eV"]={"wl": lambda x: (constants.h*constants.c)/(x*constants.e),
-               "freq": lambda x: (x*constants.e)/(constants.h)}
-convert["wl"]={"eV": lambda x: (constants.h*constants.c)/(x*constants.e),
-               "freq": lambda x: constants.c/x}
-convert["freq"]={"wl": lambda x: constants.c/x,
-                 "eV": lambda x: (constants.h*x)/(constants.e)}
-
-"""convert_nk[from][to](value)"""
-convert_nk = {}
-convert_nk["nk"]={"er_ei": lambda x: x**2.0}
-convert_nk["er_ei"]={"nk": lambda x: np.sqrt(x)}
-
+from .units import Units
+from .units import convert_photon_unit
+from .units import convert_index_unit
 
 """
 ------------------------
@@ -315,7 +269,7 @@ def get_csv_columns_as_2d_nparray(filename, columns_to_retrieve,
     return data_as_np_arrays
 
 def create_spectrum_from_csv(filename, independent_col=0, dependent_col=1,
-                             independent_unit=METERS, dependent_unit=WATTS,
+                             independent_unit=Units.m, dependent_unit=Units.W,
                              delimiter=",", lines_to_skip = 0):
     """Creates a funtion that returns the power at a wavelength based on a csv
     
@@ -354,18 +308,18 @@ def create_nk_from_csv(filename, independent_col=0, dependent_col=np.array([1,2]
     independent_data = data[0]
     dependent_data = data[1]+data[2]*1.0j
     if(independent_unit_str == "nm"):
-        independent_data = independent_data*NANOMETERS
+        independent_data = independent_data*Units.nm
     elif(independent_unit_str == "um"):
-        independent_data = independent_data*MICROMETERS
+        independent_data = independent_data*Units.um
     elif(independent_unit_str == "eV"):
-        independent_data = convert["eV"]["wl"](independent_data)
+        independent_data = convert_photon_unit("eV","wl", independent_data)
     elif(independent_unit_str == "m"):
         pass
     else:
         raise ValueError(independent_unit_str,"is not a valid selection")
     
     if(dependent_unit_str == "er_ei"):
-        dependent_data = convert_nk["er_ei"]["nk"](dependent_data)
+        dependent_data = convert_index_unit("er_ei","nk", dependent_data)
     elif(dependent_unit_str == "nk"):
         pass
     else:
@@ -504,7 +458,7 @@ def generate_index_from_2csv(filename1, filename2, type_str="nm_nk",
                 nm_list.append(float(row[0]))
                 n_list.append(float(row[1]))
         nm_array = sp.array(nm_list)
-        wavelengths = nm_array*NANOMETERS
+        wavelengths = nm_array*Units.nm
         index = sp.array(n_list)
         get_index_n = interpolate.interp1d(wavelengths, index, bounds_error=False,
                                          fill_value=(index[0],index[-1]))
@@ -518,7 +472,7 @@ def generate_index_from_2csv(filename1, filename2, type_str="nm_nk",
                 nm_list.append(float(row[0]))
                 k_list.append(float(row[1]))
         nm_array = sp.array(nm_list)
-        wavelengths = nm_array*NANOMETERS
+        wavelengths = nm_array*Units.nm
         index = - 1.0j*sp.array(k_list)
         get_index_k = interpolate.interp1d(wavelengths, index, bounds_error=False,
                                          fill_value=(index[0],index[-1]))
@@ -560,11 +514,11 @@ def generate_index_from_SOPRA_nk(filename):
     unit_array = sp.array(unit_list)
     wavelengths = sp.zeros(len(unit_array))
     if(unit_type == 0):
-        wavelengths = unit_array*NANOMETERS
+        wavelengths = unit_array*Units.nm
     elif(unit_type == 1):
-        wavelengths = convert["eV"]["wl"](unit_array)
+        wavelengths = convert_photon_unit("eV","wl",unit_array)
     elif(unit_type == 2):
-        wavelengths = unit_array*MICROMETERS
+        wavelengths = unit_array*Units.um
     index = sp.array(n_list) - 1.0j*sp.array(k_list)
     fill_indices = (index[0],index[-1])
     if(wavelengths[-1]<wavelengths[0]):
