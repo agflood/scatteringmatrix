@@ -1,7 +1,8 @@
 from setuptools import setup, find_packages
+from scatteringmatrix import __version__
 
 setup(name='scatteringmatrix',
-      version='0.1.0.dev5',
+      version=__version__,
       description='Optical scattering matrix library',
       author='Andrew G. Flood',
       author_email='andrew.gary.flood@gmail.com',
