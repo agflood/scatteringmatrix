@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 """This contains useful units and conversions for scattering matrix calculations
 
-Because all the scattering matrix code is written with m.g.s SI units, constants 
+Because all the scattering matrix code is written with m.g.s SI units, constants
 have been included that can be used as multipliers to improve the readability of
-the code being written that uses this library. This will also hopefully cut down 
+the code being written that uses this library. This will also hopefully cut down
 on unit errors.
+
+Imported External Modules: numpy, scipy.constants
 
 Classes:
     Units: contains the various distance, frequency, time, and power multipliers
 
 Functions:
-    convert_photon_unit(string,string,numeric): converts between one unit of photon 
+    convert_photon_unit(string,string,numeric): converts between one unit of photon
         measurement (such as eV) to another (such as Hz).
-    convert_index_unit(string,string,numeric): converts between complex nk values 
+    convert_index_unit(string,string,numeric): converts between complex nk values
         and complex relative permittivity.
 
 Notes:
@@ -26,7 +28,7 @@ from scipy import constants
 
 class Units:
     """Constants and units useful for optical calculations
-    
+
     Attributes:
         KILOMETERS, km
         METERS, m
@@ -41,14 +43,14 @@ class Units:
         MEGAHERTZ, MHz
         GIGAHERTZ, GHz
         TERAHERTZ, THz
-        PETAHERTZ, PHz        
+        PETAHERTZ, PHz
         SECONDS, s
         MILLISECONDS, ms
         MICROSECONDS, us
         NANOSECONDS, ns
         PICOSECONDS, ps
-        FEMTOSECONDS, fs        
-        WATTS, W    
+        FEMTOSECONDS, fs
+        WATTS, W
     """
     #Distance Units
     KILOMETERS = km = 10.0**3
@@ -75,23 +77,23 @@ class Units:
     NANOSECONDS = ns = 10.0**-9
     PICOSECONDS = ps = 10.0**-12
     FEMTOSECONDS = fs = 10.0**-15
-    
+
     #Power Units
     WATTS = W = 1.0
-    
+
 def convert_photon_unit(initial_unit, new_unit, initial_value):
     """converts between one unit of photon measurement to another
-    
+
     Args:
-        initial_unit (string): Units of the current value. Must be one 
+        initial_unit (string): Units of the current value. Must be one
             of 'eV', 'wl', or 'freq'.
-        new_unit (string): Units to convert to. Must be one of 'eV', 
+        new_unit (string): Units to convert to. Must be one of 'eV',
             'wl', or 'freq'.
         initial_value (numeric): Initial value in initial_unit.
-    
+
     Returns:
         numeric: value in terms of new_unit
-    
+
     """
     convert = {}
     convert["eV"]={"wl": lambda x: (constants.h*constants.c)/(x*constants.e),
@@ -102,19 +104,19 @@ def convert_photon_unit(initial_unit, new_unit, initial_value):
                      "eV": lambda x: (constants.h*x)/(constants.e)}
 
     return convert[initial_unit][new_unit](initial_value)
-                 
-def convert_index_unit(initial_unit, new_unit, initial_value): 
+
+def convert_index_unit(initial_unit, new_unit, initial_value):
     """converts between complex nk values and complex relative permittivity.
-    
+
     Args:
-        initial_unit (string): Units of the current value. Must be one 
+        initial_unit (string): Units of the current value. Must be one
             of 'nk', or 'er_ei'.
         new_unit (string): Units to convert to. Must be one of 'nk', or 'er_ei'.
         initial_value (numeric): Initial value in initial_unit.
-    
+
     Returns:
         numeric: value in terms of new_unit
-        
+
     """
     convert = {}
     convert["nk"]={"er_ei": lambda x: x**2.0}
