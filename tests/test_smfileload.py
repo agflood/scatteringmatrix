@@ -155,6 +155,13 @@ class TestCreateNKFromCSV(unittest.TestCase):
         self.assertRaises(ValueError, sm.create_nk_from_csv, filename_full,
                           dependent_col=np.array([1,2,3]), lines_to_skip = 1)
 
+class TestSOPRANKFiles(unittest.TestCase):
+    def test_SOPRA_eV_nk_file(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        filename_full = os.path.join(dir_path,"Test_SOPRA_Al2O3.nk")
+        index_fcn = sm.generate_index_from_SOPRA_nk(filename_full)
+        ratio = index_fcn(sm.convert_photon_unit("eV","wl",1.525))/(1.68233414703812-0.0420244851757776j)
+        self.assertAlmostEqual(ratio,1.0,places=5)
 
 if __name__ == '__main__':
     unittest.main()

@@ -222,7 +222,7 @@ def generate_index_from_SOPRA_nk(filename):
                     n_list.append(float(row[1]))
                     k_list.append(float(row[2]))
                 else:
-                    unit_list.append(start_unit+current_row*inc_units)
+                    unit_list.append(start_unit+(current_row-1)*inc_units)
                     n_list.append(float(row[0]))
                     k_list.append(float(row[1]))
             current_row += 1
@@ -234,7 +234,7 @@ def generate_index_from_SOPRA_nk(filename):
         wavelengths = convert_photon_unit("eV","wl",unit_array)
     elif(unit_type == 2):
         wavelengths = unit_array*Units.um
-    index = sp.array(n_list) - 1.0j*sp.array(k_list)
+    index = sp.array(n_list) + 1.0j*sp.array(k_list)
     fill_indices = (index[0],index[-1])
     if(wavelengths[-1]<wavelengths[0]):
         fill_indices = (index[-1],index[0])
