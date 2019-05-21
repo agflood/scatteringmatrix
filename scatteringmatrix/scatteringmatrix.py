@@ -27,10 +27,10 @@ Functions:
                     optical interface
     transmission_TM - calculate the TM-mode complex transmission at an
                     optical interface
-    reflected_power_TE
-    transmitted_power_TE
-    reflected_power_TM
-    transmitted_power_TM
+    reflected_power_TE - The reflected power of a TE wave at an interface
+    transmitted_power_TE - The transmitted power of a TE wave at an interface
+    reflected_power_TM - The reflected power of a TM wave at an interface
+    transmitted_power_TM - The transmitted power of a TM wave at an interface
     blackbody_spectrum - Emitted power from a blackbody at specific wavelength
                          and temperature
 
@@ -195,12 +195,50 @@ def transmission_TM(index1, index2, incident_angle):
 
 def reflected_power_TE(index1, index2, incident_angle,
                        calc_field=True,reflected_field=0.0):
+    """The reflected power of a TE wave at an interface
+
+    Arg:
+        index1(complex): index of refraction for the first medium
+        index2(complex): index of refraction for the second medium
+        incident_angle(complex): angle of incidence (in first medium)
+        calc_field (bool): if False, the fractional power reflected will be
+                           calculated. Otherwise, the provided reflected_field
+                           will be used.
+        reflected_field (complex): if calc_field is False, this value is used
+
+    Returns:
+        real: reflected power
+
+    Notes:
+        - numpy arrays of complex numbers of equal dimension can also be used,
+          with the return value being an array of real numbers of equal
+          dimension
+    """
     if(calc_field):
         reflected_field = reflection_TE(index1, index2, incident_angle)
     return (reflected_field*np.conj(reflected_field)).real
 
 def transmitted_power_TE(index1, index2, incident_angle,
                          calc_field=True,transmitted_field=0.0):
+    """The transmitted power of a TE wave at an interface
+
+    Arg:
+        index1(complex): index of refraction for the first medium
+        index2(complex): index of refraction for the second medium
+        incident_angle(complex): angle of incidence (in first medium)
+        calc_field (bool): if False, the fractional power transmitted will be
+                           calculated. Otherwise, the provided transmitted_field
+                           will be used.
+        transmitted_field (complex): if calc_field is False, this value is used
+
+    Returns:
+        real: transmitted power
+
+    Notes:
+        - numpy arrays of complex numbers of equal dimension can also be used,
+          with the return value being an array of real numbers of equal
+          dimension
+    """
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     if(calc_field):
         transmitted_field = transmission_TE(index1, index2, incident_angle)
@@ -210,12 +248,50 @@ def transmitted_power_TE(index1, index2, incident_angle,
 
 def reflected_power_TM(index1, index2, incident_angle,
                        calc_field=True,reflected_field=0.0):
+    """The reflected power of a TM wave at an interface
+
+    Arg:
+        index1(complex): index of refraction for the first medium
+        index2(complex): index of refraction for the second medium
+        incident_angle(complex): angle of incidence (in first medium)
+        calc_field (bool): if False, the fractional power reflected will be
+                           calculated. Otherwise, the provided reflected_field
+                           will be used.
+        reflected_field (complex): if calc_field is False, this value is used
+
+    Returns:
+        real: reflected power
+
+    Notes:
+        - numpy arrays of complex numbers of equal dimension can also be used,
+          with the return value being an array of real numbers of equal
+          dimension
+    """
     if(calc_field):
         reflected_field = reflection_TM(index1, index2, incident_angle)
     return (reflected_field*np.conj(reflected_field)).real
 
 def transmitted_power_TM(index1, index2, incident_angle,
                          calc_field=True,transmitted_field=0.0):
+    """The transmitted power of a TM wave at an interface
+
+    Arg:
+        index1(complex): index of refraction for the first medium
+        index2(complex): index of refraction for the second medium
+        incident_angle(complex): angle of incidence (in first medium)
+        calc_field (bool): if False, the fractional power transmitted will be
+                           calculated. Otherwise, the provided transmitted_field
+                           will be used.
+        transmitted_field (complex): if calc_field is False, this value is used
+
+    Returns:
+        real: transmitted power
+
+    Notes:
+        - numpy arrays of complex numbers of equal dimension can also be used,
+          with the return value being an array of real numbers of equal
+          dimension
+    """
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     if(calc_field):
         transmitted_field = transmission_TM(index1, index2, incident_angle)
