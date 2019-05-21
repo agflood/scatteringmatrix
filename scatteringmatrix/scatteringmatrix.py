@@ -8,7 +8,7 @@ of this module. This module is further divided into four sections: Units,
 Photonic Functions, Multilayer Structures, and Scattering Matrix Calculations.
 
 Important convention: if the imaginary component (k) of the index of refraction
-is positive, then a material is absorbing. (This module uses complex index of
+is negative, then a material is absorbing. (This module uses complex index of
 refraction rather than complex relative permittivity)
 
 Imported External Modules: math, csv, numpy, scipy

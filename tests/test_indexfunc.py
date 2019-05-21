@@ -6,6 +6,6 @@ import numpy.testing as npt
 import os
 
 
-        
-if __name__ == '__main__':    
+
+if __name__ == '__main__':
     unittest.main()
