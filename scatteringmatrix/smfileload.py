@@ -1,4 +1,6 @@
-"""This contains various useful functions for loading data from  files
+"""Scattering Matrix File Loading
+
+This contains various useful functions for loading data from  files
 
 Often, refractive index data will be found using ellipsometry or taken from
 another resource. In programs, these will likely be stored as csv files.
@@ -9,10 +11,16 @@ Imported External Modules: csv, numpy, scipy
 Imported Library Modules: units
 
 Functions:
-    single_index_function(complex):
-        Creates a function that returns an index for every single wavelength
-    generate_mixed_medium_approximation(float,callable,callable,string):
-        Creates a function that returns the mixed medium approximated index
+    get_csv_columns_as_2d_nparray(filename, iter of int, string, int):
+        Creates a 2D numpy array from numeric csv data.
+    create_spectrum_from_csv(filename, int, int, float, float, string, int):
+        Creates a function that returns the power at a wavelength based on a csv
+    create_nk_from_csv(filename, int, iter of int, string, string, string, int):
+        From a csv, creates a function that returns the complex refractive index
+    generate_index_from_2csv(filename, filename, string, string, string, bool):
+        Creates a function that returns the index based on two csv files
+    generate_index_from_SOPRA_nk(filename):
+        creates a function that returns an index based on SOPRA nk file data
 
 Notes:
     Throughout the documentation, you will find type "numeric" indicated. Most
@@ -33,7 +41,7 @@ def get_csv_columns_as_2d_nparray(filename, columns_to_retrieve,
 
     Arg:
         filename(string): The csv file to be used
-        columns_to_retrieve(int): number of data columns to be taken from csv
+        columns_to_retrieve(iterable of int): columns to be taken from csv
         delimiter(string/char): delimiting character for the csv file
         lines_to_skip(int): number of lines from the top to skip when loading
 
@@ -80,7 +88,7 @@ def create_spectrum_from_csv(filename, independent_col=0, dependent_col=1,
 
     cols_to_get = np.array([independent_col,dependent_col])
     data = get_csv_columns_as_2d_nparray(filename, cols_to_get,
-                                               delimiter, lines_to_skip)
+                                         delimiter, lines_to_skip)
     independent_data = data[0]*independent_unit
     dependent_data = data[1]*dependent_unit
     fills=(dependent_data[np.argmin(independent_data)],
@@ -147,52 +155,86 @@ def create_nk_from_csv(filename, independent_col=0, dependent_col=np.array([1,2]
                                      bounds_error=False, fill_value=fills)
     return lambda x: 1.0*get_index(x)
 
-def generate_index_from_2csv(filename1, filename2, type_str="nm_nk",
+def generate_index_from_2csv(filename1, filename2, photon_var="nm",index_var="nk",
                              delimiter = ",", skip_first_line = True):
     """Creates a function that returns the index based on two csv files
 
     Arg:
         filename1(string): csv file to be used for real index/permittivity
         filename2(string): csv file to be used for complex index/permittivity
-        type(string): the type of file to be opened. This can be either:
-                        - "nm_nk": stored as um,n,k, with headings
+        photon_var(string): the photon property that is used for the index data
+                        - "eV": electron voolts
+                        - "nm": nanometers
+                        - "um": micrometers
+                        - "m": meters
+        index_var(string): the index type the data is stored as:
+                        - "nk": complex index (n and k) values
+                        - "er_ei": complex permittivity (er and ei) values
         delimiter(string/char): delimiting character for the csv file
         skip_first_line(bool): if true, skips the first line of the csv
 
     Returns:
         callable: returns the complex index given the wavelength
     """
-    if(type_str=="nm_nk"):
-        nm_list, n_list = list(), list()
-        with open(filename1) as csv_file:
-            reader = csv.reader(csv_file, delimiter = delimiter,
-                                skipinitialspace = True)
-            if(skip_first_line):
-                next(reader)
-            for row in reader:
-                nm_list.append(float(row[0]))
-                n_list.append(float(row[1]))
-        nm_array = sp.array(nm_list)
-        wavelengths = nm_array*Units.nm
-        index = sp.array(n_list)
-        get_index_n = interpolate.interp1d(wavelengths, index, bounds_error=False,
-                                         fill_value=(index[0],index[-1]))
-        nm_list, k_list = list(), list()
-        with open(filename2) as csv_file:
-            reader = csv.reader(csv_file, delimiter = delimiter,
-                                skipinitialspace = True)
-            if(skip_first_line):
-                next(reader)
-            for row in reader:
-                nm_list.append(float(row[0]))
-                k_list.append(float(row[1]))
-        nm_array = sp.array(nm_list)
-        wavelengths = nm_array*Units.nm
-        index = - 1.0j*sp.array(k_list)
-        get_index_k = interpolate.interp1d(wavelengths, index, bounds_error=False,
-                                         fill_value=(index[0],index[-1]))
+    photon_list, index_r_list = list(), list()
+    with open(filename1) as csv_file:
+        reader = csv.reader(csv_file, delimiter = delimiter,
+                            skipinitialspace = True)
+        if(skip_first_line):
+            next(reader)
+        for row in reader:
+            photon_list.append(float(row[0]))
+            index_r_list.append(float(row[1]))
+    photon_array = sp.array(photon_list)
+    if(photon_var == "nm"):
+        photon_array = photon_array*Units.nm
+    elif(photon_var == "um"):
+        photon_array = photon_array*Units.um
+    elif(photon_var == "eV"):
+        photon_array = convert_photon_unit("eV","wl", photon_array)
+    elif(photon_var == "m"):
+        pass
+    else:
+        raise ValueError(photon_var,"is not a valid selection")
+    wavelengths = photon_array
+    index = sp.array(index_r_list)
+    get_index_real = interpolate.interp1d(wavelengths, index, bounds_error=False,
+                                     fill_value=(index[np.argmin(wavelengths)],index[np.argmax(wavelengths)]))
 
-        return lambda x: 1.0*(get_index_n(x)+get_index_k(x))
+    photon_list, index_i_list = list(), list()
+    with open(filename2) as csv_file:
+        reader = csv.reader(csv_file, delimiter = delimiter,
+                            skipinitialspace = True)
+        if(skip_first_line):
+            next(reader)
+        for row in reader:
+            photon_list.append(float(row[0]))
+            index_i_list.append(float(row[1]))
+    photon_array = sp.array(photon_list)
+    if(photon_var == "nm"):
+        photon_array = photon_array*Units.nm
+    elif(photon_var == "um"):
+        photon_array = photon_array*Units.um
+    elif(photon_var == "eV"):
+        photon_array = convert_photon_unit("eV","wl", photon_array)
+    elif(photon_var == "m"):
+        pass
+    else:
+        raise ValueError(photon_var,"is not a valid selection")
+    wavelengths = photon_array
+    index = 1.0j*sp.array(index_i_list)
+    get_index_imag = interpolate.interp1d(wavelengths, index, bounds_error=False,
+                                     fill_value=(index[np.argmin(wavelengths)],index[np.argmax(wavelengths)]))
+
+    if(index_var == "nk"):
+        return lambda x: 1.0*(get_index_real(x)+get_index_imag(x))
+    elif(index_var == "er_ri"):
+        return lambda x: 1.0*convert_index_unit("er_ei","nk",
+                                                    get_index_real(x)+
+                                                    get_index_image(x))
+    else:
+        raise ValueError(index_var,"is not a valid selection")
+        return lambda x: 0.0
 
 def generate_index_from_SOPRA_nk(filename):
     """creates a function that returns an index based on SOPRA nk file data

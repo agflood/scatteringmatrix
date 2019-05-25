@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""This contains useful units and conversions for scattering matrix calculations
+"""Scattering Matrix Units
+
+This contains useful units and conversions for scattering matrix calculations
 
 Because all the scattering matrix code is written with m.g.s SI units, constants
 have been included that can be used as multipliers to improve the readability of

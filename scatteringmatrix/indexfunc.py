@@ -1,4 +1,6 @@
-"""This contains various useful functions for creating refracive indexes
+"""Scattering Matrix Index Functions
+
+This contains various useful functions for creating refracive indexes
 
 While any function that returns a complex number can be used as an index, some
 things are done so frequently that it helps to have basic functions already

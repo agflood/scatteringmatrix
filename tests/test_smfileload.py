@@ -163,5 +163,29 @@ class TestSOPRANKFiles(unittest.TestCase):
         ratio = index_fcn(sm.convert_photon_unit("eV","wl",1.525))/(1.68233414703812-0.0420244851757776j)
         self.assertAlmostEqual(ratio,1.0,places=5)
 
+class TestLoadFrom2CSVFiles(unittest.TestCase):
+    def test_load_eV_nk_file_nolineskip(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        filename_full_n = os.path.join(dir_path,"TestCSV2Files_n.csv")
+        filename_full_k = os.path.join(dir_path,"TestCSV2Files_k.csv")
+        index_fcn = sm.generate_index_from_2csv(filename_full_n, filename_full_k,
+                                                  photon_var="eV", index_var="nk",
+                                                  delimiter = ",",
+                                                  skip_first_line = False)
+        ratio = (index_fcn(sm.convert_photon_unit("eV","wl",1.5))/
+                 (1.9917355371900825-0.7960199004975141j))
+        self.assertAlmostEqual(ratio,1.0,places=5)
+
+class TestSpectrumLoadFromCSVFile(unittest.TestCase):
+    def test_load_spectra_basic(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        filename_full = os.path.join(dir_path,"TestSpectraFromCSVFile.csv")
+        spectra_fcn = sm.create_spectrum_from_csv(filename_full, 0, 1,
+                                                  independent_unit=sm.Units.nm,
+                                                  dependent_unit=1.0,
+                                                  lines_to_skip = 1)
+        ratio = spectra_fcn(2420.0*sm.Units.nm)/8.135894
+        self.assertAlmostEqual(ratio,1.0,places=5)
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,6 @@
-"""This module implements a 1D optical scattering matrix algorithm
+"""Scattering Matrix Core
+
+This module implements a 1D optical scattering matrix algorithm
 
 This module is focused around an implementation of a 1D scattering
 matrix algorithm for the purpose of calculating the optical reflection,
