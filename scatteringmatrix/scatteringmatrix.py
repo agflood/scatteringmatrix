@@ -54,6 +54,10 @@ Scattering Matrix Calculations
 Functions:
     scattering_matrix_calculation - return the transmission, reflection, and
                                     absorption for a given layer list
+    calc_TR_parameters - Calculates the T,R parameters both forward reverse
+                         using a 1D scattering matrix
+    smatrix_with_thick_layers - Calculates the T,R, and A of a LayerList using a
+                                1D scattering matrix
 
 """
 
@@ -430,7 +434,7 @@ def scattering_matrix_calculation(structure, wavelengths, incident_angle = 0.0,
                                              absorption, wavelengths,
                                              incident angle, and mode
 
-    Note: wavelengths can also be an np.array
+    Note: wavelengths can also be an np.array and an array of arrays returned
     """
     try:
         num_steps = len(wavelengths)
@@ -505,3 +509,141 @@ def scattering_matrix_calculation(structure, wavelengths, incident_angle = 0.0,
 
     return transmission_of_stack, reflection_of_stack, absorption_of_stack, \
     wavelengths, incident_angle, mode
+
+def calc_TR_parameters(structure, wavelengths, incident_angle = 0.0, mode="TE"):
+    """Calculates the T,R parameters both forward reverse using a 1D scattering matrix
+
+    Arg:
+        structure(LayerList): The multilayer structure for which the
+                              T_fwd, R_fwd, T_rev, R_rev are to be claculated
+        wavelengths(float): vacuum wavelength of incident light
+        incident_angle(float): propagation angle in the first layer
+        mode(string): mode of the incident wave. This can be either "TE" or "TM"
+
+    Returns:
+        float,float,float,float: transmission in the forward direction,
+                                 reflection in the forward direction,
+                                 transmission in the backward direction,
+                                 reflection in the backward direction
+
+    Note: wavelengths can also be an np.array and an array of arrays returned
+    """
+
+    try:
+        num_steps = len(wavelengths)
+    except TypeError:
+        wavelengths = np.array([wavelengths])
+        num_steps = len(wavelengths)
+
+    results = scattering_matrix_calculation(structure, wavelengths,
+                                               incident_angle, mode)
+    T12 = results[0]
+    R12 = results[1]
+
+    indexes = np.zeros([2, num_steps], dtype=np.complex)
+    indexes[0] = structure[0].get_index(wavelengths)
+    indexes[1] = structure[len(structure)-1].get_index(wavelengths)
+    rev_angles = transmission_angle(indexes[0], indexes[1], incident_angle)
+
+    structure.reverse()
+    results = scattering_matrix_calculation(structure, wavelengths,
+                                               rev_angles, mode)
+    T21 = results[0]
+    R21 = results[1]
+
+    structure.reverse()
+
+    return T12,R12,T21,R21
+
+def smatrix_with_thick_layers(structure, wavelengths, incident_angle = 0.0,
+                              mode="TE", coherence_limit=Units.um):
+    """Calculates the T,R, and A of a LayerList using a 1D scattering matrix
+
+    Arg:
+        structure(LayerList): The multilayer structure for which the
+                              transmission, reflection, and absorption ratios
+                              are to be claculated
+        wavelengths(float): vacuum wavelength of incident light
+        incident_angle(float): propagation angle in the first layer
+        mode(string): mode of the incident wave. This can be either "TE" or "TM"
+        coherence_limit(float): layers than this will be considered 'thick' and
+                                interference effects will be ignored
+
+    Returns:
+        float,float,float,float,float,float: the transmission, reflection,
+                                             absorption, wavelengths,
+                                             incident angle, and mode
+
+    Note: wavelengths can also be an np.array and an array of arrays returned"""
+
+    try:
+        num_steps = len(wavelengths)
+    except TypeError:
+        wavelengths = np.array([wavelengths])
+        num_steps = len(wavelengths)
+
+    num_layers = len(structure)
+    initial_indexes = structure[0].get_index(wavelengths)
+
+    thick_sm_list_T12 = list()
+    thick_sm_list_T21 = list()
+    thick_sm_list_R12 = list()
+    thick_sm_list_R21 = list()
+    iterated_T12 = np.ones([2,num_steps])
+    iterated_T21 = np.ones([2,num_steps])
+    iterated_R12 = np.zeros([2,num_steps])
+    iterated_R21 = np.zeros([2,num_steps])
+    temp_structure = LayerList()
+
+    for i in range(num_layers):
+        if(i>0 and structure[i-1].thickness > coherence_limit):
+            temp_layer_rear = SingleLayer(structure[i-1].get_index, 0.0)
+            temp_structure.append(temp_layer_rear)
+
+        if (structure[i].thickness > coherence_limit):
+            temp_layer_thick = SingleLayer(structure[i].get_index, structure[i].thickness)
+            temp_structure.append(temp_layer_thick)
+
+        else:
+            temp_structure.append(structure[i])
+            if(i<num_layers-1 and structure[i+1].thickness > coherence_limit):
+                temp_layer_final = SingleLayer(structure[i+1].get_index, 0.0)
+                temp_structure.append(temp_layer_final)
+
+        if ((structure[i].thickness > coherence_limit)
+            or (i==num_layers-1 or structure[i+1].thickness > coherence_limit)):
+            temp_start_index = temp_structure[0].get_index(wavelengths)
+            temp_angles = transmission_angle(initial_indexes, temp_start_index, incident_angle)
+
+            temp_results = calc_TR_parameters(temp_structure, wavelengths, temp_angles, mode)
+
+            thick_sm_list_T12.append(temp_results[0])
+            thick_sm_list_R12.append(temp_results[1])
+            thick_sm_list_T21.append(temp_results[2])
+            thick_sm_list_R21.append(temp_results[3])
+            temp_structure.clear()
+
+    thick_sm_list_T12 = np.asarray(thick_sm_list_T12, dtype=np.float)
+    thick_sm_list_T21 = np.asarray(thick_sm_list_T21, dtype=np.float)
+    thick_sm_list_R12 = np.asarray(thick_sm_list_R12, dtype=np.float)
+    thick_sm_list_R21 = np.asarray(thick_sm_list_R21, dtype=np.float)
+    num_matrices = len(thick_sm_list_T12)
+
+    for i in range(num_matrices):
+        K = 1.0-iterated_R21[0]*thick_sm_list_R12[i]
+        iterated_T12[1] = iterated_T12[0]*thick_sm_list_T12[i]/K
+        iterated_R21[1] = (thick_sm_list_R21[i]+thick_sm_list_T21[i]*iterated_R21[0]*thick_sm_list_T12[i]/K)
+        iterated_R12[1] = (iterated_R12[0]+iterated_T12[0]*thick_sm_list_R12[i]*iterated_T21[0]/K)
+        iterated_T21[1] = thick_sm_list_T21[i]*iterated_T21[0]/K
+
+        iterated_T12[0] = iterated_T12[1]
+        iterated_R12[0] = iterated_R12[1]
+        iterated_T21[0] = iterated_T21[1]
+        iterated_R21[0] = iterated_R21[1]
+
+    total_transmission = iterated_T12[1]
+    total_reflection = iterated_R12[1]
+    total_absorption = 1.0-total_transmission-total_reflection
+
+    return total_transmission, total_reflection, total_absorption, \
+           wavelengths, incident_angle, mode

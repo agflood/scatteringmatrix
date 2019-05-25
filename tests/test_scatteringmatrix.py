@@ -425,6 +425,28 @@ class TestScatteringMatrixCalc(unittest.TestCase):
     def test_scattering_matrix_calculation_complex_slab(self):
         pass
 
+class TestTRParamCalc(unittest.TestCase):
+    def test_TRParamCalc_noerror(self):
+        index_air = sm.single_index_function(1.0)
+        index_complex = sm.single_index_function(1.5-2.0j)
+        structure = sm.LayerList()
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        calculate_powers = sm.calc_TR_parameters(structure, 1.0*sm.Units.um)
+
+class TestSMThickCalc(unittest.TestCase):
+    def test_SMthickCalc_noerror(self):
+        index_air = sm.single_index_function(1.0)
+        index_1 = sm.single_index_function(1.3)
+        index_complex = sm.single_index_function(1.5-2.0j)
+        structure = sm.LayerList()
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_1, 100.0*sm.Units.nm))
+        structure.append(sm.SingleLayer(index_complex, 2.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        calculate_powers = sm.smatrix_with_thick_layers(structure, 1.0*sm.Units.um)
+
 
 if __name__ == '__main__':
     unittest.main()
