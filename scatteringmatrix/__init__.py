@@ -1,4 +1,4 @@
-__version__ = '0.1.0.dev6'
+__version__ = '0.1.0.a1'
 
 from .scatteringmatrix import *
 from .units import *

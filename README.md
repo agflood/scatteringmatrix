@@ -83,6 +83,19 @@ print("Absorption @ 600 nm, 900 nm:", '{0:.6f}'.format(results[2][30]),
 
 ```
 
+Running this file should result in an output of:
+
+```
+Selected Wavelength Data
+----------------------------
+Incident Angle: 0.0
+Mode: TE
+Wavelengths (nm): 600.0 , 900.0
+Transmission @ 600 nm, 900 nm: 0.662785 , 0.964672
+Reflection @ 600 nm, 900 nm: 0.337215 , 0.035328
+Absorption @ 600 nm, 900 nm: 0.000000 , 0.000000
+```
+
 ## Running unit tests
 
 Go into the directory where you have the library installed to run the basic unit tests. This can be done via the command line with
@@ -99,7 +112,7 @@ OK
 
 ## Deployment
 
-This is enitrely a python module, so no special deployment instructions are required.
+This is enitrely a python module, so no special deployment steps are required.
 
 ## Contributing
 
@@ -107,7 +120,7 @@ Please contact the lead author andrew.flood@mail.utoronto.ca if you wish to join
 
 ## Versions
 
-We have only had development versions up until now, so it will still stay at 0.1 until the beta release.
+We have only had development and alpha versions up until now, so it will still stay at 0.1.0 for the time being.
 
 ## Authors
 
