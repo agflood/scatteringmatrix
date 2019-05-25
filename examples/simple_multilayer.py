@@ -1,6 +1,6 @@
 """
 This file implements finding the transmission and reflection for various
-wavelengths for a single index lyaer on a glass substrate.
+wavelengths for a single index layer on a glass substrate.
 """
 
 import scatteringmatrix as sm
