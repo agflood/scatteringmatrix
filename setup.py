@@ -1,9 +1,14 @@
 from setuptools import setup, find_packages
 from scatteringmatrix import __version__
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(name='scatteringmatrix',
       version=__version__,
       description='Optical scattering matrix library',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       author='Andrew G. Flood',
       author_email='andrew.gary.flood@gmail.com',
       url='https://github.com/agflood/scatteringmatrix',
