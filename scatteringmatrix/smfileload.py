@@ -1,4 +1,5 @@
 """Scattering Matrix File Loading
+----------------------------------
 
 This contains various useful functions for loading data from  files
 
@@ -7,17 +8,19 @@ another resource. In programs, these will likely be stored as csv files.
 Alternatively, various spectra may be stored as csv files. This module is
 intended to assist with quickly loading these kinds of data.
 
-Imported External Modules: csv, numpy, scipy
-Imported Library Modules: units
+Imported External Modules:
+    csv, numpy, scipy
+Imported Scatteringmatrix Modules:
+    units
 
 Functions:
-    get_csv_columns_as_2d_nparray(filename, iter of int, string, int):
+    get_csv_columns_as_2d_nparray(filename, columns_to_retrieve, delimiter, lines_to_skip):
         Creates a 2D numpy array from numeric csv data.
-    create_spectrum_from_csv(filename, int, int, float, float, string, int):
+    create_spectrum_from_csv(filename, independent_col, dependent_col, independent_unit, dependent_unit, delimiter, lines_to_skip):
         Creates a function that returns the power at a wavelength based on a csv
-    create_nk_from_csv(filename, int, iter of int, string, string, string, int):
+    create_nk_from_csv(filename, independent_col, dependent_col, independent_unit_str, dependent_unit_str, delimiter, lines_to_skip):
         From a csv, creates a function that returns the complex refractive index
-    generate_index_from_2csv(filename, filename, string, string, string, bool):
+    generate_index_from_2csv(filename1, filename2, photon_var,index_var, delimiter, skip_first_line):
         Creates a function that returns the index based on two csv files
     generate_index_from_SOPRA_nk(filename):
         creates a function that returns an index based on SOPRA nk file data
@@ -39,7 +42,7 @@ def get_csv_columns_as_2d_nparray(filename, columns_to_retrieve,
                                         delimiter=",", lines_to_skip = 0):
     """Creates a 2D numpy array from numeric csv data.
 
-    Arg:
+    Args:
         filename(string): The csv file to be used
         columns_to_retrieve(iterable of int): columns to be taken from csv
         delimiter(string/char): delimiting character for the csv file
@@ -48,8 +51,9 @@ def get_csv_columns_as_2d_nparray(filename, columns_to_retrieve,
     Returns:
         2D numpy array: returns csv data in the form of a numeric 2D array
 
-    Note:
+    Notes:
         All data to be loaded must be numeric because a numpy array is returned
+
     """
 
     all_column_data = list()
@@ -73,7 +77,7 @@ def create_spectrum_from_csv(filename, independent_col=0, dependent_col=1,
                              delimiter=",", lines_to_skip = 0):
     """Creates a function that returns the power at a wavelength based on a csv
 
-    Arg:
+    Args:
         filename(string): The csv file to be used
         independent_col(int): column containing the independent variable data
         dependent_col(int): column containing the dependent variable data
@@ -84,6 +88,7 @@ def create_spectrum_from_csv(filename, independent_col=0, dependent_col=1,
 
     Returns:
         callable: returns the power at a given wavelength (per unit wavelength)
+
     """
 
     cols_to_get = np.array([independent_col,dependent_col])
@@ -103,7 +108,7 @@ def create_nk_from_csv(filename, independent_col=0, dependent_col=np.array([1,2]
                         delimiter=",", lines_to_skip = 0):
     """From a csv, creates a function that returns the complex refractive index
 
-    Arg:
+    Args:
         filename(string): The csv file to be used
         independent_col(int): column containing the independent variable data
         dependent_col(np.array of size 2): columns containing the dependent
@@ -121,6 +126,7 @@ def create_nk_from_csv(filename, independent_col=0, dependent_col=np.array([1,2]
 
     Returns:
         callable: returns the complex index for a given wavelength
+
     """
 
     if(len(dependent_col) != 2):
@@ -159,7 +165,7 @@ def generate_index_from_2csv(filename1, filename2, photon_var="nm",index_var="nk
                              delimiter = ",", skip_first_line = True):
     """Creates a function that returns the index based on two csv files
 
-    Arg:
+    Args:
         filename1(string): csv file to be used for real index/permittivity
         filename2(string): csv file to be used for complex index/permittivity
         photon_var(string): the photon property that is used for the index data
@@ -175,7 +181,9 @@ def generate_index_from_2csv(filename1, filename2, photon_var="nm",index_var="nk
 
     Returns:
         callable: returns the complex index given the wavelength
+
     """
+
     photon_list, index_r_list = list(), list()
     with open(filename1) as csv_file:
         reader = csv.reader(csv_file, delimiter = delimiter,
@@ -239,12 +247,14 @@ def generate_index_from_2csv(filename1, filename2, photon_var="nm",index_var="nk
 def generate_index_from_SOPRA_nk(filename):
     """creates a function that returns an index based on SOPRA nk file data
 
-    Arg:
+    Args:
         filename(string): The nk file to be used
 
     Returns:
         callable: returns the complex index for a given wavelength
+
     """
+
     unit_list, n_list, k_list = list(), list(), list()
     unit_type = 0
     start_unit, end_unit, num_units, inc_units = 0.0,0.0,0.0,0.0

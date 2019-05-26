@@ -1,4 +1,5 @@
 """Scattering Matrix Core
+----------------------------
 
 This module implements a 1D optical scattering matrix algorithm
 
@@ -13,51 +14,50 @@ Important convention: if the imaginary component (k) of the index of refraction
 is negative, then a material is absorbing. (This module uses complex index of
 refraction rather than complex relative permittivity)
 
-Imported External Modules: math, csv, numpy, scipy
-Imported Internal Submodules: units, smfileload, indexfunc
+Imported External Modules:
+    math, csv, numpy, scipy
+Imported Scatteringmatrix Submodules:
+    units, smfileload, indexfunc
 
-Photonic Functions
-------------------
-Functions:
-    transmission_angle - get the angle of transmission for optical interface
-    get_kz - get the k-value in the direction of propogation
-    reflection_TE - calculate the TE-mode complex reflection at an
-                    optical interface
-    transmission_TE - calculate the TE-mode complex transmission at an
-                    optical interface
-    reflection_TM - calculate the TM-mode complex reflection at an
-                    optical interface
-    transmission_TM - calculate the TM-mode complex transmission at an
-                    optical interface
-    reflected_power_TE - The reflected power of a TE wave at an interface
-    transmitted_power_TE - The transmitted power of a TE wave at an interface
-    reflected_power_TM - The reflected power of a TM wave at an interface
-    transmitted_power_TM - The transmitted power of a TM wave at an interface
-    blackbody_spectrum - Emitted power from a blackbody at specific wavelength
-                         and temperature
-
-
-Multilayer Structures
----------------------
 Classes:
-    SingleLayer - A single index layer in a multilayer stack
-    LayerList - A list of layers (a stack)
+    SingleLayer:
+        This is a single layer of a 1D multilayer structure
+    LayerList:
+        This is a list of SingleLayers
 
 Functions:
-    create_multilayer - Create a layer list made up of repeating layers
-    create_graded_mixed_index - Creates a multilayer that has a varying mixed
-                                medium index
-
-
-Scattering Matrix Calculations
-------------------------------
-Functions:
-    scattering_matrix_calculation - return the transmission, reflection, and
-                                    absorption for a given layer list
-    calc_TR_parameters - Calculates the T,R parameters both forward reverse
-                         using a 1D scattering matrix
-    smatrix_with_thick_layers - Calculates the T,R, and A of a LayerList using a
-                                1D scattering matrix
+    transmission_angle(index1, index2, incident_angle):
+        The complex transmitted angle from an initial angle using Snell's law
+    get_kz(index, angle, wavelengths):
+        The wavenumber component in the z-direction (corresponding to 0 degrees)
+    reflection_TE(index1, index2, incident_angle):
+        The complex reflection of a TE wave at an interface
+    transmission_TE(index1, index2, incident_angle):
+        The complex transmission of a TE wave at an interface
+    reflection_TM(index1, index2, incident_angle):
+        The complex reflection of a TM wave at an interface
+    transmission_TM(index1, index2, incident_angle):
+        The complex transmission of a TM wave at an interface
+    reflected_power_TE(index1, index2, incident_angle, calc_field, reflected_field):
+        The reflected power of a TE wave at an interface
+    transmitted_power_TE(index1, index2, incident_angle, calc_field, transmitted_field):
+        The transmitted power of a TE wave at an interface
+    reflected_power_TM(index1, index2, incident_angle, calc_field, reflected_field):
+        The reflected power of a TM wave at an interface
+    transmitted_power_TM(index1, index2, incident_angle, calc_field,transmitted_field):
+        The transmitted power of a TM wave at an interface
+    blackbody_spectrum(temperature, wavelength):
+        Emitted power from a blackbody at specific wavelength and temperature
+    create_multilayer(index_func_list, thickness_list):
+        Create a layer list made up of repeating layers
+    create_graded_mixed_index(frac_func, x_start, x_end, index_func_1, index_func_2, num_layers, thickness, mix_type):
+        Creates a multilayer that has a varying mixed medium index
+    scattering_matrix_calculation(structure, wavelengths, incident_angle, mode):
+        Calculates the T,R, and A of a LayerList using a 1D scattering matrix
+    calc_TR_parameters(structure, wavelengths, incident_angle, mode):
+        Calculates the T,R parameters both forward reverse using a 1D scattering matrix
+    smatrix_with_thick_layers(structure, wavelengths, incident_angle, mode, coherence_limit):
+        Calculates the T,R, and A of a LayerList using a 1D scattering matrix
 
 """
 
@@ -71,16 +71,10 @@ from .units import *
 from .smfileload import *
 from .indexfunc import *
 
-"""
-------------------------
-BASIC PHOTONIC FUNCTIONS
-------------------------
-"""
-
 def transmission_angle(index1, index2, incident_angle):
     """The complex transmitted angle from an initial angle using Snell's law
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -88,16 +82,19 @@ def transmission_angle(index1, index2, incident_angle):
     Returns:
         complex: propogation angle in second medium
 
-    Note: numpy arrays of complex numbers of equal dimension can also be used,
-          with the return value being an array of complex numbers of equal
-          dimension
+    Notes:
+        numpy arrays of complex numbers of equal dimension can also be used,
+        with the return value being an array of complex numbers of equal
+        dimension
+
     """
+
     return np.arcsin(((index1/index2)*np.sin(incident_angle))+0.0j)
 
 def get_kz(index, angle, wavelengths):
     """The wavenumber component in the z-direction (corresponding to 0 degrees)
 
-    Arg:
+    Args:
         index(complex): index of refraction for the first medium
         angle(complex): angle of propagagtion
         wavelength(float): vacuum wavelength
@@ -105,16 +102,19 @@ def get_kz(index, angle, wavelengths):
     Returns:
         complex: wavenumber in z direction in second medium
 
-    Note: numpy arrays of complex numbers of equal dimension can also be used,
-          with the return value being an array of complex numbers of equal
-          dimension
+    Notes:
+        numpy arrays of complex numbers of equal dimension can also be used,
+        with the return value being an array of complex numbers of equal
+        dimension
+
     """
+
     return (2.0*np.pi*index*np.cos(angle))/wavelengths
 
 def reflection_TE(index1, index2, incident_angle):
     """The complex reflection of a TE wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -127,7 +127,9 @@ def reflection_TE(index1, index2, incident_angle):
           with the return value being an array of complex numbers of equal
           dimension
         - Fresnel equations used
+
     """
+
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     part1 = index1*np.cos(incident_angle)
     part2 = index2*np.cos(transmitted_angle)
@@ -136,7 +138,7 @@ def reflection_TE(index1, index2, incident_angle):
 def transmission_TE(index1, index2, incident_angle):
     """The complex transmission of a TE wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -149,7 +151,9 @@ def transmission_TE(index1, index2, incident_angle):
           with the return value being an array of complex numbers of equal
           dimension
         - Fresnel equations used
+
     """
+
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     part1 = index1*np.cos(incident_angle)
     part2 = index2*np.cos(transmitted_angle)
@@ -158,7 +162,7 @@ def transmission_TE(index1, index2, incident_angle):
 def reflection_TM(index1, index2, incident_angle):
     """The complex reflection of a TM wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -171,7 +175,9 @@ def reflection_TM(index1, index2, incident_angle):
           with the return value being an array of complex numbers of equal
           dimension
         - Fresnel equations used
+
     """
+
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     part1 = index2*np.cos(incident_angle)
     part2 = index1*np.cos(transmitted_angle)
@@ -180,7 +186,7 @@ def reflection_TM(index1, index2, incident_angle):
 def transmission_TM(index1, index2, incident_angle):
     """The complex transmission of a TM wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -193,7 +199,9 @@ def transmission_TM(index1, index2, incident_angle):
           with the return value being an array of complex numbers of equal
           dimension
         - Fresnel equations used
+
     """
+
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     part1 = index2*np.cos(incident_angle)
     part2 = index1*np.cos(transmitted_angle)
@@ -203,7 +211,7 @@ def reflected_power_TE(index1, index2, incident_angle,
                        calc_field=True,reflected_field=0.0):
     """The reflected power of a TE wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -219,7 +227,9 @@ def reflected_power_TE(index1, index2, incident_angle,
         - numpy arrays of complex numbers of equal dimension can also be used,
           with the return value being an array of real numbers of equal
           dimension
+
     """
+
     if(calc_field):
         reflected_field = reflection_TE(index1, index2, incident_angle)
     return (reflected_field*np.conj(reflected_field)).real
@@ -228,7 +238,7 @@ def transmitted_power_TE(index1, index2, incident_angle,
                          calc_field=True,transmitted_field=0.0):
     """The transmitted power of a TE wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -244,7 +254,9 @@ def transmitted_power_TE(index1, index2, incident_angle,
         - numpy arrays of complex numbers of equal dimension can also be used,
           with the return value being an array of real numbers of equal
           dimension
+
     """
+
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     if(calc_field):
         transmitted_field = transmission_TE(index1, index2, incident_angle)
@@ -256,7 +268,7 @@ def reflected_power_TM(index1, index2, incident_angle,
                        calc_field=True,reflected_field=0.0):
     """The reflected power of a TM wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -272,7 +284,9 @@ def reflected_power_TM(index1, index2, incident_angle,
         - numpy arrays of complex numbers of equal dimension can also be used,
           with the return value being an array of real numbers of equal
           dimension
+
     """
+
     if(calc_field):
         reflected_field = reflection_TM(index1, index2, incident_angle)
     return (reflected_field*np.conj(reflected_field)).real
@@ -281,7 +295,7 @@ def transmitted_power_TM(index1, index2, incident_angle,
                          calc_field=True,transmitted_field=0.0):
     """The transmitted power of a TM wave at an interface
 
-    Arg:
+    Args:
         index1(complex): index of refraction for the first medium
         index2(complex): index of refraction for the second medium
         incident_angle(complex): angle of incidence (in first medium)
@@ -297,7 +311,9 @@ def transmitted_power_TM(index1, index2, incident_angle,
         - numpy arrays of complex numbers of equal dimension can also be used,
           with the return value being an array of real numbers of equal
           dimension
+
     """
+
     transmitted_angle = transmission_angle(index1, index2, incident_angle)
     if(calc_field):
         transmitted_field = transmission_TM(index1, index2, incident_angle)
@@ -308,7 +324,7 @@ def transmitted_power_TM(index1, index2, incident_angle,
 def blackbody_spectrum(temperature, wavelength):
     """Emitted power from a blackbody at specific wavelength and temperature
 
-    Arg:
+    Args:
         temperature(float): the blackbody temperature in kelvin
         wavelength(float): the wavelength in meters
 
@@ -318,16 +334,12 @@ def blackbody_spectrum(temperature, wavelength):
     Notes:
         - the wavelength can be a numpy array of real numbers, with the return
           value being an array of of equal dimension
+
     """
+
     part1 = (2.0*constants.h*constants.c**2)/(wavelength**5)
     part2 = 1.0/(np.exp(constants.h*constants.c/(wavelength*constants.k*temperature))-1.0)
     return part1*part2
-
-"""
----------------------
-MULTILAYER STRUCTURES
----------------------
-"""
 
 class SingleLayer:
     """This is a single layer of a 1D multilayer structure
@@ -338,7 +350,9 @@ class SingleLayer:
                              refraction for a specific wavelength. The
                              function must be of the form...
                              f(float): return complex
+
     """
+
     def __init__(self, index_function, thicknessInit = 0):
         self.thickness = thicknessInit
         self.get_index = index_function
@@ -354,7 +368,7 @@ def create_multilayer(index_func_list, thickness_list):
     The function cycles through the index and thickness lists, adding
     SingleLayers to a LayerList until all the thickness_list is complete.
 
-    Arg:
+    Args:
         index_func_list(iterable of callables): this is a list or array or
                                                 similar iterable of index
                                                 functions to be repeated
@@ -364,7 +378,9 @@ def create_multilayer(index_func_list, thickness_list):
 
     Returns:
         LayerList: resulting multilayer from the two lists
+
     """
+
     multilayer = LayerList()
     numLayerTypes = len(index_func_list)
     numLayers = len(thickness_list)
@@ -380,7 +396,7 @@ def create_graded_mixed_index(frac_func, x_start, x_end, index_func_1,
                               mix_type = "bruggeman"):
     """Creates a multilayer that has a varying mixed medium index
 
-    Arg:
+    Args:
         frac_func(callable): A function that takes x as a parameter and returns
                              a value between 0 and 1
         x_start(float): x value for the first layer
@@ -396,6 +412,7 @@ def create_graded_mixed_index(frac_func, x_start, x_end, index_func_1,
 
     Returns:
         LayerList: resulting multilayer approximating the graded index
+
     """
     index_list = list()
     thickness_list = list()
@@ -410,18 +427,11 @@ def create_graded_mixed_index(frac_func, x_start, x_end, index_func_1,
         thickness_list.append(t_single)
     return create_multilayer(index_list, thickness_list)
 
-
-"""
-------------------------------------
-PHOTONIC CALCULATIONS AND STRUCTURES
-------------------------------------
-"""
-
 def scattering_matrix_calculation(structure, wavelengths, incident_angle = 0.0,
                                   mode="TE"):
     """Calculates the T,R, and A of a LayerList using a 1D scattering matrix
 
-    Arg:
+    Args:
         structure(LayerList): The multilayer structure for which the
                               transmission, reflection, and absorption ratios
                               are to be claculated
@@ -434,8 +444,11 @@ def scattering_matrix_calculation(structure, wavelengths, incident_angle = 0.0,
                                              absorption, wavelengths,
                                              incident angle, and mode
 
-    Note: wavelengths can also be an np.array and an array of arrays returned
+    Notes:
+        wavelengths can also be an np.array and an array of arrays returned
+
     """
+
     try:
         num_steps = len(wavelengths)
     except TypeError:
@@ -513,7 +526,7 @@ def scattering_matrix_calculation(structure, wavelengths, incident_angle = 0.0,
 def calc_TR_parameters(structure, wavelengths, incident_angle = 0.0, mode="TE"):
     """Calculates the T,R parameters both forward reverse using a 1D scattering matrix
 
-    Arg:
+    Args:
         structure(LayerList): The multilayer structure for which the
                               T_fwd, R_fwd, T_rev, R_rev are to be claculated
         wavelengths(float): vacuum wavelength of incident light
@@ -526,7 +539,9 @@ def calc_TR_parameters(structure, wavelengths, incident_angle = 0.0, mode="TE"):
                                  transmission in the backward direction,
                                  reflection in the backward direction
 
-    Note: wavelengths can also be an np.array and an array of arrays returned
+    Notes:
+        wavelengths can also be an np.array and an array of arrays returned
+
     """
 
     try:
@@ -559,7 +574,7 @@ def smatrix_with_thick_layers(structure, wavelengths, incident_angle = 0.0,
                               mode="TE", coherence_limit=Units.um):
     """Calculates the T,R, and A of a LayerList using a 1D scattering matrix
 
-    Arg:
+    Args:
         structure(LayerList): The multilayer structure for which the
                               transmission, reflection, and absorption ratios
                               are to be claculated
@@ -574,7 +589,10 @@ def smatrix_with_thick_layers(structure, wavelengths, incident_angle = 0.0,
                                              absorption, wavelengths,
                                              incident angle, and mode
 
-    Note: wavelengths can also be an np.array and an array of arrays returned"""
+    Notes:
+        wavelengths can also be an np.array and an array of arrays returned
+
+    """
 
     try:
         num_steps = len(wavelengths)

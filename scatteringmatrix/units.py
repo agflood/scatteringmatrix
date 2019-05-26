@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Scattering Matrix Units
+-----------------------------
 
 This contains useful units and conversions for scattering matrix calculations
 
@@ -11,13 +12,15 @@ on unit errors.
 Imported External Modules: numpy, scipy.constants
 
 Classes:
-    Units: contains the various distance, frequency, time, and power multipliers
+    Units:
+        contains the various distance, frequency, time, and power multipliers
 
 Functions:
-    convert_photon_unit(string,string,numeric): converts between one unit of photon
-        measurement (such as eV) to another (such as Hz).
-    convert_index_unit(string,string,numeric): converts between complex nk values
-        and complex relative permittivity.
+    convert_photon_unit(initial_unit, new_unit, initial_value):
+        converts between one unit of photon measurement (such as eV) to another
+        (such as Hz).
+    convert_index_unit(initial_unit, new_unit, initial_value): 
+        converts between complex nk values and complex relative permittivity.
 
 Notes:
     Throughout the documentation, you will find type "numeric" indicated. Most
@@ -97,6 +100,7 @@ def convert_photon_unit(initial_unit, new_unit, initial_value):
         numeric: value in terms of new_unit
 
     """
+
     convert = {}
     convert["eV"]={"wl": lambda x: (constants.h*constants.c)/(x*constants.e),
                    "freq": lambda x: (x*constants.e)/(constants.h)}
@@ -120,6 +124,7 @@ def convert_index_unit(initial_unit, new_unit, initial_value):
         numeric: value in terms of new_unit
 
     """
+
     convert = {}
     convert["nk"]={"er_ei": lambda x: x**2.0}
     convert["er_ei"]={"nk": lambda x: np.sqrt(x)}

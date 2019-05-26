@@ -1,4 +1,5 @@
 """Scattering Matrix Index Functions
+------------------------------------
 
 This contains various useful functions for creating refracive indexes
 
@@ -6,25 +7,27 @@ While any function that returns a complex number can be used as an index, some
 things are done so frequently that it helps to have basic functions already
 defined.
 
-Imported External Modules: numpy
-Imported Library Modules: units
+Imported External Modules:
+    numpy
+Imported Scatteringmatrix Submodules:
+    units
 
 Functions:
-    single_index_function(complex):
+    single_index_function(index):
         Creates a function that returns an index for every single wavelength
-    generate_mixed_medium_approximation(float,callable,callable,string):
+    generate_mixed_medium_approximation(fraction_1, index_func_1, index_func_2, mix_type):
         Creates a function that returns the mixed medium approximated index
-    create_index_Sellmeier_type2(float,float,float,float,float):
-            Creates a function that returns the sellmeier calculated index
-    create_index_Sellmeier_type3(float,float,float,float,float,float):
+    create_index_Sellmeier_type2(A, B, C, D, E):
         Creates a function that returns the sellmeier calculated index
-    create_index_drude(float,float,float):
+    create_index_Sellmeier_type3(A, B, C, D, E, F):
+        Creates a function that returns the sellmeier calculated index
+    create_index_drude(P, E0, Tau):
         Creates a function that returns the drude-model calculated index
-    create_index_lorentz_peak(float,float,float):
+    create_index_lorentz_peak(A, E0, gamma):
         Creates a function that returns the lorentz peak calculated index
-    create_index_cauchy_law(float,float,float,float,float,float):
+    create_index_cauchy_law(A, B, C, D, E, F):
         Creates a function that returns the cauchy calculated index
-    create_index_tauc_lorenz(float, float, float, float, float):
+    create_index_tauc_lorenz(er_inf, E_g, A, C, E_0):
         Creates a function that returns the tauc-lorenz calculated index
 
 Notes:
@@ -45,7 +48,9 @@ def single_index_function(index):
 
     Returns:
         callable: returns the complex index for an argument of any float
+
     """
+
     get_index = lambda wavelengths: index
     return get_index
 
@@ -53,7 +58,7 @@ def generate_mixed_medium_approximation(fraction_1, index_func_1, index_func_2,
                                         mix_type = "bruggeman"):
     """Creates a function that returns the mixed medium approximated index
 
-    Arg:
+    Args:
         fraction_1(float): The volume fraction of index 1
         index_func_1(callable): the index returning function of medium 1
         index_func_2(callable): the index returning function of medium 2
@@ -64,6 +69,7 @@ def generate_mixed_medium_approximation(fraction_1, index_func_1, index_func_2,
     Returns:
         callable: returns the complex index given the mixture of those two
                   media
+
     """
 
     if(mix_type == "MG"):
@@ -87,14 +93,14 @@ def generate_mixed_medium_approximation(fraction_1, index_func_1, index_func_2,
             return new_index
         return porous_index
 
-def create_index_Sellmeier_type2(A,B,C,D,E):
+def create_index_Sellmeier_type2(A, B, C, D, E):
     """Creates a function that returns the sellmeier calculated index
 
     The sellmeier index function is defined as:
     epsilon_r = 1.0+(A**2.0-1.0)*wavelength**2.0/(wavelength**2.0-B)
     epsilon_i = C/wavelength+D/wavelength**2.0+E/wavelength**5.0
 
-    Arg:
+    Args:
         A(float): A parameter of the sellmeier function
         B(float): B parameter of the sellmeier function
         C(float): C parameter of the sellmeier function
@@ -104,22 +110,25 @@ def create_index_Sellmeier_type2(A,B,C,D,E):
     Returns:
         callable: returns the complex index given the wavelength
 
-    Note: as per the rest of this library, meters are used for unit wavelength
+    Notes:
+        As per the rest of this library, meters are used for unit wavelength
+
     """
+
     def return_complex_index(wavelength):
         e_r = 1.0+(A**2.0-1.0)*wavelength**2.0/(wavelength**2.0-B)
         e_i = C/wavelength+D/wavelength**2.0+E/wavelength**5.0
         return convert_index_unit("er_ei", "nk", e_r-e_i*1.0j)
     return return_complex_index
 
-def create_index_Sellmeier_type3(A,B,C,D,E,F):
+def create_index_Sellmeier_type3(A, B, C, D, E, F):
     """Creates a function that returns the sellmeier calculated index
 
     The sellmeier index function is defined as:
     epsilon_r = A+B*wavelength**2.0/(wavelength**2.0-C)
     epsilon_i = D/wavelength+E/wavelength**2.0+F/wavelength**5.0
 
-    Arg:
+    Args:
         A(float): A parameter of the sellmeier function
         B(float): B parameter of the sellmeier function
         C(float): C parameter of the sellmeier function
@@ -130,18 +139,21 @@ def create_index_Sellmeier_type3(A,B,C,D,E,F):
     Returns:
         callable: returns the complex index given the wavelength
 
-    Note: as per the rest of this library, meters are used for unit wavelength
+    Notes:
+        As per the rest of this library, meters are used for unit wavelength
+
     """
+
     def return_complex_index(wavelength):
         e_r = A+B*wavelength**2.0/(wavelength**2.0-C)
         e_i = D/wavelength+E/wavelength**2.0+F/wavelength**5.0
         return convert_index_unit("er_ei", "nk", e_r-e_i*1.0j)
     return return_complex_index
 
-def create_index_drude(P,E0,Tau):
+def create_index_drude(P, E0, Tau):
     """Creates a function that returns the drude-model calculated index
 
-    Arg:
+    Args:
         P(float): Real polarization
         E0(float): Plasma frequency (in eV)
         Tau(float): Mean free lifetime (1/Tau is the mean free pass)
@@ -149,8 +161,11 @@ def create_index_drude(P,E0,Tau):
     Returns:
         callable: returns the complex index given the wavelength
 
-    Note: as per the rest of this library, meters are used for unit wavelength
+    Notes:
+        As per the rest of this library, meters are used for unit wavelength
+
     """
+
     def return_complex_index(wavelength):
         Lambda0 = convert_photon_unit("eV","wl", E0)
         tau_inv = (1.0/Tau)
@@ -160,10 +175,10 @@ def create_index_drude(P,E0,Tau):
         return convert_index_unit("er_ei", "nk", e_r-e_i*1.0j)
     return return_complex_index
 
-def create_index_lorentz_peak(A,E0,gamma):
+def create_index_lorentz_peak(A, E0, gamma):
     """Creates a function that returns the lorentz peak calculated index
 
-    Arg:
+    Args:
         A(float): Peak intensity
         E0(float): Center peak frequency (in eV)
         gamma(float): Peak width (in wavelength [meters])
@@ -171,8 +186,11 @@ def create_index_lorentz_peak(A,E0,gamma):
     Returns:
         callable: returns the complex index given the wavelength
 
-    Note: as per the rest of this library, meters are used for unit wavelength
+    Notes:
+        As per the rest of this library, meters are used for unit wavelength
+
     """
+
     def return_complex_index(wavelength):
         Lambda0 = convert_photon_unit("eV","wl", E0)
         common = wavelength**2.0-Lambda0**2
@@ -182,13 +200,13 @@ def create_index_lorentz_peak(A,E0,gamma):
         return convert_index_unit("er_ei", "nk", e_r-e_i*1.0j)
     return return_complex_index
 
-def create_index_cauchy_law(A,B,C,D,E,F):
+def create_index_cauchy_law(A, B, C, D, E, F):
     """Creates a function that returns the cauchy calculated index
 
     The cauchy index function is defined as:
     n_complex = A+B/x**2.0+C/x**4.0-1.0j*(D/x+E/x**3.0+F/x**5.0)
 
-    Arg:
+    Args:
         A(float): A parameter of the cauchy function
         B(float): B parameter of the cauchy function
         C(float): C parameter of the cauchy function
@@ -199,14 +217,17 @@ def create_index_cauchy_law(A,B,C,D,E,F):
     Returns:
         callable: returns the complex index given the wavelength
 
-    Note: as per the rest of this library, meters are used for unit wavelength
+    Notes:
+        As per the rest of this library, meters are used for unit wavelength
+
     """
+
     return lambda x: A+B/x**2.0+C/x**4.0-1.0j*(D/x+E/x**3.0+F/x**5.0)
 
 def create_index_tauc_lorenz(er_inf, E_g, A, C, E_0):
     """Creates a function that returns the tauc-lorenz calculated index
 
-    Arg:
+    Args:
         er_inf(float): Real permittivity at infinity
         E_g(float): Badgap of the material (in eV)
         A(float): Peak intensity
@@ -216,8 +237,11 @@ def create_index_tauc_lorenz(er_inf, E_g, A, C, E_0):
     Returns:
         callable: returns the complex index given the wavelength
 
-    Note: as per the rest of this library, meters are used for unit wavelength
+    Notes:
+        As per the rest of this library, meters are used for unit wavelength
+
     """
+
     def return_complex_index(wavelength):
         E = convert_photon_unit("wl","eV", wavelength)
         e_i = np.where(E >= E_g, (A*E_0*C*(E-E_g)**2)/(E*((E**2-E_0**2)**2+C**2*E**2)), 0.0)
