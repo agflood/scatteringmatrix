@@ -489,10 +489,10 @@ def scattering_matrix_calculation(structure, wavelengths, incident_angle = 0.0,
         transmission_at_boundary = transmission_func(index_of_current_layer,
                                                      index_of_next_layer,
                                                      angles[i])
-        I11 = 1.0/np.conj(transmission_at_boundary)
+        I11 = 1.0/transmission_at_boundary
         I12 = reflection_at_boundary/transmission_at_boundary
-        I21 = np.conj(reflection_at_boundary)/np.conj(transmission_at_boundary)
-        I22 = 1.0/transmission_at_boundary
+        I21 = I12
+        I22 = I11
         S11 = (phase_shifts[i]*S11)/(I11 - phase_shifts[i]*S12*I21)
         S12 = (((phase_shifts[i]*S12*I22-I12)*phase_shifts[i+1])
               /(I11-phase_shifts[i]*S12*I21))
