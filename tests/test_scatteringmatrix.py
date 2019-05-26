@@ -399,6 +399,54 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         npt.assert_array_almost_equal(ratio_r,np.array([1.0]),decimal=5)
         self.assertTrue((sum_t_r<1.0).all())
 
+    def test_scattering_matrix_calculation_energy_conservation_TM(self):
+        wavelengths = np.linspace(200.0,2500.0,461)*sm.Units.nm
+        i1 = 1.0
+        i2 = 1.5-2.0j
+        angle = np.pi/3
+
+        #Calculated
+        index_air = sm.single_index_function(i1)
+        index_complex = sm.single_index_function(i2)
+        structure = sm.LayerList()
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 10.0*sm.Units.nm))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        calculate_powers = sm.scattering_matrix_calculation(structure,
+                                                            wavelengths,
+                                                            incident_angle=angle,
+                                                            mode="TM")
+        calc_transmission = calculate_powers[0]
+        calc_reflection = calculate_powers[1]
+
+        #Check
+        sum_t_r = calc_transmission+calc_reflection
+        self.assertTrue((sum_t_r<1.0).all())
+
+    def test_scattering_matrix_calculation_energy_conservation_TE(self):
+        wavelengths = np.linspace(200.0,2500.0,461)*sm.Units.nm
+        i1 = 1.0
+        i2 = 1.5-2.0j
+        angle = np.pi/3
+
+        #Calculated
+        index_air = sm.single_index_function(i1)
+        index_complex = sm.single_index_function(i2)
+        structure = sm.LayerList()
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        structure.append(sm.SingleLayer(index_complex, 10.0*sm.Units.nm))
+        structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
+        calculate_powers = sm.scattering_matrix_calculation(structure,
+                                                            wavelengths,
+                                                            incident_angle=angle,
+                                                            mode="TE")
+        calc_transmission = calculate_powers[0]
+        calc_reflection = calculate_powers[1]
+
+        #Check
+        sum_t_r = calc_transmission+calc_reflection
+        self.assertTrue((sum_t_r<1.0).all())
+
     def test_scattering_matrix_calculation_fabryperot(self):
         index_air = sm.single_index_function(1.0)
         index_glass = sm.single_index_function(1.5)
@@ -426,17 +474,30 @@ class TestScatteringMatrixCalc(unittest.TestCase):
         pass
 
 class TestTRParamCalc(unittest.TestCase):
-    def test_TRParamCalc_noerror(self):
+    def test_TRParamCalc_energy_conserved(self):
+        wavelengths = np.linspace(200.0,2500.0,461)*sm.Units.nm
+
         index_air = sm.single_index_function(1.0)
         index_complex = sm.single_index_function(1.5-2.0j)
         structure = sm.LayerList()
         structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
         structure.append(sm.SingleLayer(index_complex, 1.0*sm.Units.um))
         structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
-        calculate_powers = sm.calc_TR_parameters(structure, 1.0*sm.Units.um)
+        calculate_powers = sm.calc_TR_parameters(structure, wavelengths)
+        calc_transmission_fwd = calculate_powers[0]
+        calc_reflection_fwd = calculate_powers[1]
+        calc_transmission_rev = calculate_powers[0]
+        calc_reflection_rev = calculate_powers[1]
+
+        #Check
+        sum_t_r = calc_transmission_fwd+calc_reflection_fwd
+        sum_t_r_rev = calc_transmission_fwd+calc_reflection_fwd
+        self.assertTrue((sum_t_r<1.0).all())
+        self.assertTrue((sum_t_r_rev<1.0).all())
 
 class TestSMThickCalc(unittest.TestCase):
-    def test_SMthickCalc_noerror(self):
+    def test_SMthickCalc_energy_conserved(self):
+        wavelengths = np.linspace(200.0,2500.0,461)*sm.Units.nm
         index_air = sm.single_index_function(1.0)
         index_1 = sm.single_index_function(1.3)
         index_complex = sm.single_index_function(1.5-2.0j)
@@ -445,7 +506,13 @@ class TestSMThickCalc(unittest.TestCase):
         structure.append(sm.SingleLayer(index_1, 100.0*sm.Units.nm))
         structure.append(sm.SingleLayer(index_complex, 2.0*sm.Units.um))
         structure.append(sm.SingleLayer(index_air, 1.0*sm.Units.um))
-        calculate_powers = sm.smatrix_with_thick_layers(structure, 1.0*sm.Units.um)
+        calculate_powers = sm.smatrix_with_thick_layers(structure, wavelengths)
+        calc_transmission = calculate_powers[0]
+        calc_reflection = calculate_powers[1]
+
+        #Check
+        sum_t_r = calc_transmission+calc_reflection
+        self.assertTrue((sum_t_r<1.0).all())
 
 
 if __name__ == '__main__':
